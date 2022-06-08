@@ -9,7 +9,7 @@ references:
          - run: 
             name: Checking out dependencies
             command: |
-               git clone https://github.com/Zimbra/zm-pkg-tool.git ~/zm-pkg-tool
+               git clone -b hotfix/speed-up-debian-package-creation --single-branch https://github.com/Zimbra/zm-pkg-tool.git ~/zm-pkg-tool
                echo "BUILD_NO=$CIRCLE_BUILD_NUM" > config.build
          - persist_to_workspace:
             root: ..
@@ -44,6 +44,7 @@ references:
                aws s3 sync build/dist/ "s3://files.zimbra.com/dev-releases/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BRANCH-$BUILD_NO/archives/zimbra-zextras/" \
                   --acl public-read \
                   --region us-east-1
+
 
 ############################################################################
 
@@ -115,7 +116,7 @@ workflows:
                - checkout
          - build_c8:
             requires:
-              - checkout
+               - checkout
          - build_c7:
             requires:
                - checkout
@@ -128,9 +129,7 @@ workflows:
                - build_u16
                - build_c8
                - build_c7
-#            <<: *std_filters
 
          - deploy_s3:
             requires:
                - deploy_s3_hold
-#            <<: *std_filters
