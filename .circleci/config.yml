@@ -45,13 +45,6 @@ references:
                   --acl public-read \
                   --region us-east-1
 
-#   std_filters: &std_filters
-#      filters:
-#         branches:
-#            only:
-#               - master
-#               - develop
-
 ############################################################################
 
 jobs:
@@ -83,20 +76,6 @@ jobs:
          - image: zimbra/zm-base-os:devcore-ubuntu-16.04
       <<: *build_job_steps
 
-   build_u14:
-      working_directory: ~/zm-zextras
-      shell: /bin/bash -eo pipefail
-      docker:
-         - image: zimbra/zm-base-os:devcore-ubuntu-14.04
-      <<: *build_job_steps
-
-   build_u12:
-      working_directory: ~/zm-zextras
-      shell: /bin/bash -eo pipefail
-      docker:
-         - image: zimbra/zm-base-os:devcore-ubuntu-12.04
-      <<: *build_job_steps
-
    build_c8:
       working_directory: ~/zm-zextras
       shell: /bin/bash -eo pipefail
@@ -109,13 +88,6 @@ jobs:
       shell: /bin/bash -eo pipefail
       docker:
          - image: zimbra/zm-base-os:devcore-centos-7
-      <<: *build_job_steps
-
-   build_c6:
-      working_directory: ~/zm-zextras
-      shell: /bin/bash -eo pipefail
-      docker:
-         - image: zimbra/zm-base-os:devcore-centos-6
       <<: *build_job_steps
 
    deploy_s3:
@@ -141,19 +113,10 @@ workflows:
          - build_u16:
             requires:
                - checkout
-         - build_u14:
-            requires:
-               - checkout
-         - build_u12:
-            requires:
-               - checkout
          - build_c8:
-           requires:
+            requires:
               - checkout
          - build_c7:
-            requires:
-               - checkout
-         - build_c6:
             requires:
                - checkout
 
@@ -163,11 +126,8 @@ workflows:
                - build_u20
                - build_u18
                - build_u16
-               - build_u14
-               - build_u12
                - build_c8
                - build_c7
-               - build_c6
 #            <<: *std_filters
 
          - deploy_s3:
