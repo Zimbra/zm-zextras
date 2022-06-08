@@ -51,7 +51,7 @@ downloads/drive:
 
 ########################################################################################################
 
-CHAT_VERSION = 4.0.1
+CHAT_VERSION = 4.0.2
 CHAT_LINK = "https://zextras-artifacts.s3-eu-west-1.amazonaws.com/openchat/08_Jun_2022_17/openchat.tgz"
 
 stage-chat: downloads/chat
