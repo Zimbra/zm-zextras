@@ -9,7 +9,7 @@ references:
          - run: 
             name: Checking out dependencies
             command: |
-               git clone https://github.com/Zimbra/zm-pkg-tool.git ~/zm-pkg-tool
+               git clone -b hotfix/speed-up-debian-package-creation --single-branch https://github.com/Zimbra/zm-pkg-tool.git ~/zm-pkg-tool
                echo "BUILD_NO=$CIRCLE_BUILD_NUM" > config.build
          - persist_to_workspace:
             root: ..
@@ -45,12 +45,6 @@ references:
                   --acl public-read \
                   --region us-east-1
 
-#   std_filters: &std_filters
-#      filters:
-#         branches:
-#            only:
-#               - master
-#               - develop
 
 ############################################################################
 
@@ -61,6 +55,13 @@ jobs:
       docker:
          - image: zimbra/zm-base-os:core-ubuntu
       <<: *checkout_job_steps
+
+   build_u20:
+      working_directory: ~/zm-zextras
+      shell: /bin/bash -eo pipefail
+      docker:
+         - image: zimbra/zm-base-os:devcore-ubuntu-20.04
+      <<: *build_job_steps
 
    build_u18:
       working_directory: ~/zm-zextras
@@ -74,20 +75,6 @@ jobs:
       shell: /bin/bash -eo pipefail
       docker:
          - image: zimbra/zm-base-os:devcore-ubuntu-16.04
-      <<: *build_job_steps
-
-   build_u14:
-      working_directory: ~/zm-zextras
-      shell: /bin/bash -eo pipefail
-      docker:
-         - image: zimbra/zm-base-os:devcore-ubuntu-14.04
-      <<: *build_job_steps
-
-   build_u12:
-      working_directory: ~/zm-zextras
-      shell: /bin/bash -eo pipefail
-      docker:
-         - image: zimbra/zm-base-os:devcore-ubuntu-12.04
       <<: *build_job_steps
 
    build_c8:
@@ -104,13 +91,6 @@ jobs:
          - image: zimbra/zm-base-os:devcore-centos-7
       <<: *build_job_steps
 
-   build_c6:
-      working_directory: ~/zm-zextras
-      shell: /bin/bash -eo pipefail
-      docker:
-         - image: zimbra/zm-base-os:devcore-centos-6
-      <<: *build_job_steps
-
    deploy_s3:
       working_directory: ~/zm-zextras
       shell: /bin/bash -eo pipefail
@@ -125,16 +105,13 @@ workflows:
    main:
       jobs:
          - checkout
+         - build_u20:
+            requires:
+               - checkout
          - build_u18:
             requires:
                - checkout
          - build_u16:
-            requires:
-               - checkout
-         - build_u14:
-            requires:
-               - checkout
-         - build_u12:
             requires:
                - checkout
          - build_c8:
@@ -143,23 +120,16 @@ workflows:
          - build_c7:
             requires:
                - checkout
-         - build_c6:
-            requires:
-               - checkout
 
          - deploy_s3_hold:
             type: approval
             requires:
+               - build_u20
                - build_u18
                - build_u16
-               - build_u14
-               - build_u12
                - build_c8
                - build_c7
-               - build_c6
-#            <<: *std_filters
 
          - deploy_s3:
             requires:
                - deploy_s3_hold
-#            <<: *std_filters
