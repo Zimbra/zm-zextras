@@ -106,7 +106,7 @@ workflows:
       jobs:
          - build:
             type: approval
-         - checkout
+         - checkout:
             requires:
               - build
          - build_u20:
