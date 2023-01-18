@@ -20,7 +20,7 @@ all: zimbra-drive-pkg zimbra-chat-pkg
 
 ########################################################################################################
 
-DRIVE_VERSION = 1.0.13
+DRIVE_VERSION = 1.0.14
 DRIVE_LINK = "https://zextras-artifacts.s3-eu-west-1.amazonaws.com/zextras_drive/12_Dec_2019_25/zimbra_drive.tgz"
 
 stage-drive: downloads/drive 
@@ -51,7 +51,7 @@ downloads/drive:
 
 ########################################################################################################
 
-CHAT_VERSION = 4.0.2
+CHAT_VERSION = 4.0.3
 CHAT_LINK = "https://zextras-artifacts.s3-eu-west-1.amazonaws.com/openchat/08_Jun_2022_17/openchat.tgz"
 
 stage-chat: downloads/chat
@@ -67,7 +67,7 @@ zimbra-chat-pkg: stage-chat
 	   --pkg-release=1 \
 	   --pkg-name=zimbra-chat \
 	   --pkg-summary="Zimbra Chat Extensions" \
-	   --pkg-depends='zimbra-store (>= 9.0.0)' \
+	   --pkg-depends='zimbra-store (>= 8.8.15)' \
            --pkg-conflicts='zimbra-talk' \
            --pkg-pre-install-script='scripts/chat/preinst.sh'\
            --pkg-post-install-script='scripts/chat/postinst.sh'\
