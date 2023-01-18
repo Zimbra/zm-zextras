@@ -1,4 +1,6 @@
-version: 2
+version: 2.1
+orbs:
+  aws-s3: circleci/aws-s3@3.0.0
 
 ############################################################################
 
@@ -31,20 +33,18 @@ references:
             paths: zm-zextras/build/dist/*
 
    deploy_s3_job_steps: &deploy_s3_job_steps
+      docker:
+      - image: 'cimg/python:3.10'
       steps:
          - attach_workspace:
             at: ..
-         - deploy:
-            name: Deploying to S3
-            command: |
-               # NOTE: We are not using $CIRCLE_BUILD_NUM as its different for each job of the workflow
-               #       Instead, we need $CIRCLE_BUILD_NUM allocated for 'checkout' job, (stored in config.build)
-               BUILD_NO=$(cat config.build | sed -ne '/^BUILD_NO\>/ { s/.*=\s*//p }'); [ ! -z "$BUILD_NO" ] || exit 2;
-
-               aws s3 sync build/dist/ "s3://files.zimbra.com/dev-releases/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BRANCH-$BUILD_NO/archives/zimbra-zextras/" \
-                  --acl public-read \
-                  --region us-east-1
-
+         - aws-s3/sync:
+            from: 'build/dist/'
+            to: 's3://files.zimbra.com/dev-releases/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BRANCH-$CIRCLE_BUILD_NUM/archives/zimbra-zextras/'
+            aws-access-key-id: RELEASE_AWS_ACCESS_KEY_ID
+            aws-secret-access-key: RELEASE_AWS_SECRET_ACCESS_KEY
+            aws-region: RELEASE_AWS_DEFAULT_REGION
+            arguments: --acl public-read
 
 ############################################################################
 
@@ -104,7 +104,11 @@ workflows:
    version: 2
    main:
       jobs:
-         - checkout
+         - build:
+            type: approval
+         - checkout:
+            requires:
+              - build
          - build_u20:
             requires:
                - checkout
@@ -131,5 +135,7 @@ workflows:
                - build_c7
 
          - deploy_s3:
+            context:
+               - aws
             requires:
                - deploy_s3_hold
